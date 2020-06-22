@@ -1,9 +1,12 @@
-const open = require('open')
-const listenCallback = (serverPort) => {
-  console.log('server up and running at %s port', serverPort)
+const open = require("open");
+const listenCallback = serverPort => {
+  console.log("server up and running at %s port", serverPort);
   if (process.env.LOCAL) {
-    open('https://localhost:' + serverPort)
+    console.log("yes");
+    open("https://localhost:" + serverPort);
+  } else {
+    console.log("here");
   }
-}
+};
 
-module.exports = listenCallback
+module.exports = listenCallback;
