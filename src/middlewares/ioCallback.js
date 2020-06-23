@@ -82,6 +82,34 @@ module.exports = io => {
         }
       });
     });
+
+    socket.on("raiseMyHand", async roomId => {
+      console.log("someone has raised hand ");
+      const socketIds = await socketIdsInRoom(roomId);
+      // callBack(socketIds)
+      let thePersonHangingSocketId = socket.id;
+      socketIds.forEach(socketId => {
+        if (socketId != thePersonHangingSocketId) {
+          const to = io.sockets.connected[socketId];
+          to.emit("someoneRaisedHand", thePersonHangingSocketId);
+        } else {
+        }
+      });
+    });
+
+    socket.on("lowerHand", async roomId => {
+      console.log("someone has raised hand ");
+      const socketIds = await socketIdsInRoom(roomId);
+      // callBack(socketIds)
+      let thePersonHangingSocketId = socket.id;
+      socketIds.forEach(socketId => {
+        if (socketId != thePersonHangingSocketId) {
+          const to = io.sockets.connected[socketId];
+          to.emit("someoneLoweredHand", thePersonHangingSocketId);
+        } else {
+        }
+      });
+    });
   }
 
   const socketIdsInRoom = roomID => {
