@@ -1,4 +1,6 @@
 module.exports = io => {
+  const peopleWhoRaisedHands = [];
+
   function ioCallback(socket) {
     console.log(`Socket id: ${socket.id}`);
     socket.emit("connect", socket.id);
@@ -11,6 +13,9 @@ module.exports = io => {
       socket.room = roomID;
     });
 
+    socket.on("retrievePeopleWhoRaisedHands", async (roomID, callback) => {
+      callback(peopleWhoRaisedHands);
+    });
     socket.on("exchange", data => {
       console.log("exchange");
       data.from = socket.id;
@@ -88,6 +93,7 @@ module.exports = io => {
       const socketIds = await socketIdsInRoom(roomId);
       // callBack(socketIds)
       let thePersonHangingSocketId = socket.id;
+      peopleWhoRaisedHands.push(thePersonHangingSocketId);
       socketIds.forEach(socketId => {
         if (socketId != thePersonHangingSocketId) {
           const to = io.sockets.connected[socketId];
@@ -106,6 +112,33 @@ module.exports = io => {
         if (socketId != thePersonHangingSocketId) {
           const to = io.sockets.connected[socketId];
           to.emit("someoneLoweredHand", thePersonHangingSocketId);
+        } else {
+        }
+      });
+    });
+
+    socket.on("pauseMyVideo", async roomId => {
+      const socketIds = await socketIdsInRoom(roomId);
+      // callBack(socketIds)
+      let thePersonHangingSocketId = socket.id;
+      peopleWhoRaisedHands.push(thePersonHangingSocketId);
+      socketIds.forEach(socketId => {
+        if (socketId != thePersonHangingSocketId) {
+          const to = io.sockets.connected[socketId];
+          to.emit("someonePausedVideo", thePersonHangingSocketId);
+        } else {
+        }
+      });
+    });
+
+    socket.on("unPauseMyVideo", async roomId => {
+      const socketIds = await socketIdsInRoom(roomId);
+      // callBack(socketIds)
+      let thePersonHangingSocketId = socket.id;
+      socketIds.forEach(socketId => {
+        if (socketId != thePersonHangingSocketId) {
+          const to = io.sockets.connected[socketId];
+          to.emit("someoneResumedVideo", thePersonHangingSocketId);
         } else {
         }
       });
