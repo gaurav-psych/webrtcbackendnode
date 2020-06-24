@@ -1,5 +1,7 @@
 module.exports = io => {
-  const peopleWhoRaisedHands = [];
+  let peopleWhoRaisedHands = [];
+  let peoplePausedVideo = [];
+  let peopleMuted = [];
 
   function ioCallback(socket) {
     console.log(`Socket id: ${socket.id}`);
@@ -16,6 +18,14 @@ module.exports = io => {
     socket.on("retrievePeopleWhoRaisedHands", async (roomID, callback) => {
       callback(peopleWhoRaisedHands);
     });
+    socket.on("retrievePeopleWhoPausedVideo", async (roomID, callback) => {
+      callback(peoplePausedVideo);
+    });
+
+    socket.on("retrievePeopleWhoMuted", async (roomID, callback) => {
+      callback(peopleMuted);
+    });
+
     socket.on("exchange", data => {
       console.log("exchange");
       data.from = socket.id;
@@ -103,11 +113,17 @@ module.exports = io => {
       });
     });
 
+    // im sending emit to alland also removing that scoketid from my array
     socket.on("lowerHand", async roomId => {
       console.log("someone has raised hand ");
       const socketIds = await socketIdsInRoom(roomId);
       // callBack(socketIds)
       let thePersonHangingSocketId = socket.id;
+      let newpeopleWhoRaisedHands = peopleWhoRaisedHands.filter(
+        e => e !== thePersonHangingSocketId
+      );
+      peopleWhoRaisedHands = newpeopleWhoRaisedHands;
+
       socketIds.forEach(socketId => {
         if (socketId != thePersonHangingSocketId) {
           const to = io.sockets.connected[socketId];
@@ -121,7 +137,7 @@ module.exports = io => {
       const socketIds = await socketIdsInRoom(roomId);
       // callBack(socketIds)
       let thePersonHangingSocketId = socket.id;
-      peopleWhoRaisedHands.push(thePersonHangingSocketId);
+      peoplePausedVideo.push(thePersonHangingSocketId);
       socketIds.forEach(socketId => {
         if (socketId != thePersonHangingSocketId) {
           const to = io.sockets.connected[socketId];
@@ -135,10 +151,47 @@ module.exports = io => {
       const socketIds = await socketIdsInRoom(roomId);
       // callBack(socketIds)
       let thePersonHangingSocketId = socket.id;
+
+      let newpeopleUnpausedVideo = peoplePausedVideo.filter(
+        e => e !== thePersonHangingSocketId
+      );
+      peoplePausedVideo = newpeopleUnpausedVideo;
       socketIds.forEach(socketId => {
         if (socketId != thePersonHangingSocketId) {
           const to = io.sockets.connected[socketId];
           to.emit("someoneResumedVideo", thePersonHangingSocketId);
+        } else {
+        }
+      });
+    });
+
+    socket.on("muteMyAudio", async roomId => {
+      const socketIds = await socketIdsInRoom(roomId);
+      // callBack(socketIds)
+      let thePersonHangingSocketId = socket.id;
+      peopleMuted.push(thePersonHangingSocketId);
+      socketIds.forEach(socketId => {
+        if (socketId != thePersonHangingSocketId) {
+          const to = io.sockets.connected[socketId];
+          to.emit("someoneMuted", thePersonHangingSocketId);
+        } else {
+        }
+      });
+    });
+
+    socket.on("unmuteMyAudio", async roomId => {
+      const socketIds = await socketIdsInRoom(roomId);
+      // callBack(socketIds)
+      let thePersonHangingSocketId = socket.id;
+
+      let newpeopleUnpausedVideo = peopleMuted.filter(
+        e => e !== thePersonHangingSocketId
+      );
+      peopleMuted = newpeopleUnpausedVideo;
+      socketIds.forEach(socketId => {
+        if (socketId != thePersonHangingSocketId) {
+          const to = io.sockets.connected[socketId];
+          to.emit("someoneUnmuted", thePersonHangingSocketId);
         } else {
         }
       });
